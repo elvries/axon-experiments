@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 public class GcCommandConfiguration {
 
     @Bean
-    public Repository<GiftCard> giftCardRepository(EventStore eventStore, Cache cache) {
-        return EventSourcingRepository.builder(GiftCard.class)
+    public Repository<Statement> giftCardRepository(EventStore eventStore, Cache cache) {
+        return EventSourcingRepository.builder(Statement.class)
                 .cache(cache).eventStore(eventStore)
                 .build();
     }

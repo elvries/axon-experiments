@@ -1,25 +1,25 @@
 package example.giftcard.command;
 
-import example.giftcard.api.IssueCardCmd;
-import example.giftcard.api.CardIssuedEvt;
+import example.giftcard.api.CreateStatementCmd;
+import example.giftcard.api.StatementCreatedEvt;
 import org.axonframework.test.aggregate.AggregateTestFixture;
 import org.axonframework.test.aggregate.FixtureConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
 public class MyCommandComponentTest {
-    private FixtureConfiguration<GiftCard> fixture;
+    private FixtureConfiguration<Statement> fixture;
 
     @Before
     public void setUp() {
-        fixture = new AggregateTestFixture<>(GiftCard.class);
+        fixture = new AggregateTestFixture<>(Statement.class);
     }
 
     @Test
     public void testFirstFixture() {
         fixture.givenNoPriorActivity()
-                .when(new IssueCardCmd("1", 10))
+                .when(new CreateStatementCmd("1"))
                 .expectSuccessfulHandlerExecution()
-                .expectEvents(new CardIssuedEvt("1", 10));
+                .expectEvents(new StatementCreatedEvt("1"));
     }
 }

@@ -1,9 +1,9 @@
 package example.giftcard.command;
 
-import example.giftcard.api.CardIssuedEvt;
-import example.giftcard.api.CardRedeemedEvt;
-import example.giftcard.api.IssueCardCmd;
-import example.giftcard.api.RedeemCardCmd;
+import example.giftcard.api.StatementCreatedEvt;
+import example.giftcard.api.TransactionRegisteredEvt;
+import example.giftcard.api.CreateStatementCmd;
+import example.giftcard.api.RegisterTransactionCmd;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 
 import java.lang.invoke.MethodHandles;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,50 +23,44 @@ import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
 @Aggregate
 @Profile("command")
-public class GiftCard {
+public class Statement {
 
     private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @AggregateIdentifier
     private String cardId;
 
+    private Instant settledDate;
+
     @AggregateMember // 1.
-    private List<GiftCardTransaction> transactions = new ArrayList<>();
+    private List<TransactionFee> transactionFees = new ArrayList<>();
 
-    private int remainingValue;
-
-    public GiftCard() {
+    public Statement() {
         log.debug("empty constructor invoked");
     }
 
     @CommandHandler
-    public GiftCard(IssueCardCmd cmd) {
+    public Statement(CreateStatementCmd cmd) {
         log.debug("handling {}", cmd);
-        if (cmd.getAmount() <= 0) throw new IllegalArgumentException("amount <= 0");
-        apply(new CardIssuedEvt(cmd.getCardId(), cmd.getAmount()));
+        apply(new StatementCreatedEvt(cmd.getCardId()));
     }
 
     @CommandHandler
-    public void handle(RedeemCardCmd cmd) {
+    public void handle(RegisterTransactionCmd cmd) {
         log.debug("handling {}", cmd);
-        if (cmd.getAmount() <= 0) throw new IllegalArgumentException("amount <= 0");
-        if (cmd.getAmount() > remainingValue) throw new IllegalStateException("amount > remaining value");
-        apply(new CardRedeemedEvt(cardId, cmd.getAmount()));
+        apply(new TransactionRegisteredEvt(cardId, cmd.getTimestamp(), cmd.getType()));
     }
 
     @EventSourcingHandler
-    public void on(CardIssuedEvt evt) {
+    public void on(StatementCreatedEvt evt) {
         log.debug("applying {}", evt);
         cardId = evt.getCardId();
-        remainingValue = evt.getAmount();
-        log.debug("new remaining value: {}", remainingValue);
     }
 
     @EventSourcingHandler
-    public void on(CardRedeemedEvt evt) {
+    public void on(TransactionRegisteredEvt evt) {
         log.debug("applying {}", evt);
-        transactions.add(new GiftCardTransaction(UUID.randomUUID().toString(), evt.getAmount()));
-        log.debug("new remaining value: {}", remainingValue);
+        transactionFees.add(new TransactionFee(UUID.randomUUID().toString(), evt.getType()));
     }
 
 }

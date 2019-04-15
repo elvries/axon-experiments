@@ -8,32 +8,31 @@ import org.axonframework.modelling.command.EntityId;
 
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
-public class GiftCardTransaction {
+public class TransactionFee {
 
     @EntityId // 2.
     private String transactionId;
 
-    private int transactionValue;
-    private boolean reimbursed = false;
+    private String type;
 
-    GiftCardTransaction(String transactionId, int transactionValue) {
+    TransactionFee(String transactionId, String type) {
         this.transactionId = transactionId;
-        this.transactionValue = transactionValue;
+        this.type = type;
     }
 
     @CommandHandler
     public void handle(ReimburseCardCmd cmd) {
-        if (reimbursed) {
-            throw new IllegalStateException("Transaction already reimbursed");
-        }
+//        if (reimbursed) {
+//            throw new IllegalStateException("Transaction already reimbursed");
+//        }
         apply(new CardReimbursedEvt(transactionId));
     }
 
     @EventSourcingHandler
     public void on(CardReimbursedEvt event) {
         // 2.
-        if (transactionId.equals(event.getTransactionId())) {
-            reimbursed = true;
-        }
+//        if (transactionId.equals(event.getTransactionId())) {
+//            reimbursed = true;
+//        }
     }
 }
